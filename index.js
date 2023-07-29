@@ -19,10 +19,41 @@ app.get('/', function (req, res) {
   res.sendFile(__dirname + '/views/index.html');
 });
 
+app.set('trust proxy', true);
+
+app.use((req, res, next) => {
+
+  const ip = req.ip || req.socket.remoteAddress;
+
+  const language = req.headers['accept-language'];
+
+  const userAgent = req.headers['user-agent'];
+
+  req.clientInfo = { ip, language, userAgent };
+
+  // console.log({ conection: req.connection });
+  console.log({ socket: req.socket.remoteAddress });
+  console.log({ ip: req.ip });
+  console.log({ testing: req.clientInfo });
+  // console.log({ req });
+
+  next();
+});
+
 // your first API endpoint...
 app.get('/api/hello', function (req, res) {
   res.json({ greeting: 'hello API' });
 });
+
+app.get('/api/whoami', function (req, res) {
+  const { ip, language, userAgent } = req.clientInfo;
+  res.json({
+    ipaddress: ip,
+    language,
+    software: userAgent,
+  });
+});
+
 
 // listen for requests :)
 var listener = app.listen(process.env.PORT || 3000, function () {
